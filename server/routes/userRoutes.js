@@ -93,57 +93,56 @@ router.post("/signup", (req, res, next) => {
 router.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, theUser, failureDetails) => {
     if (err) {
-      res
-        .status(500)
-        .json({ message: "Something went wrong authenticating user" });
-      return;
+      return res.status(500).json({ message: "Something went wrong during authentication." });
     }
 
     if (!theUser) {
-      // "failureDetails" contains the error messages
-      // from our logic in "LocalStrategy" { message: '...' }.
-      res.status(401).json(failureDetails);
-      return;
+      return res.status(401).json(failureDetails);
     }
 
-    // save user in session
-    req.login(theUser, err => {
+    req.login(theUser, (err) => {
       if (err) {
-        res.status(500).json({ message: "Session save went bad." });
-        return;
+        return res.status(500).json({ message: "Session save went wrong." });
       }
 
-      // We are now logged in (that's why we can also send req.user)
-      console.log("---123456789098765432345678---", req.user);
+      console.log("---Logged In User---", req.user);
       res.status(200).json(theUser);
     });
   })(req, res, next);
 });
 
 router.post("/logout", (req, res, next) => {
-  // req.logout() is defined by passport
-  req.logout();
-  res.status(200).json({ message: "Log out success!" });
+  req.logout((err) => {
+    if (err) {
+      return next(err); 
+    }
+    res.status(200).json({ message: "Log out success!" });
+  });
 });
+
 
 router.get("/getcurrentuser", (req, res, next) => {
-  // req.isAuthenticated() is defined by passport
-  if (req.user) {
-    let newObject = {};
-    newObject.username = req.user.username;
-    newObject._id = req.user._id;
-    newObject.followers = req.user.followers;
-    newObject.following = req.user.following;
-    newObject.email = req.user.email;
-    newObject.firstName = req.user.firstName;
-    newObject.lastName = req.user.lastName;
-    newObject.image = req.user.image;
+  // Check if the user is authenticated
+  if (req.isAuthenticated() && req.user) {
+    // Create a new object with the user's details
+    const newObject = {
+      username: req.user.username,
+      _id: req.user._id,
+      followers: req.user.followers,
+      following: req.user.following,
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      image: req.user.image
+    };
 
-    res.status(200).json(newObject);
-    return;
+    return res.status(200).json(newObject); // Return the user details
   }
+
+  // User is not authenticated
   res.status(403).json({ message: "Unauthorized" });
 });
+
 
 router.post("/update/:id", uploadCloud.single("image"), (req, res, next) => {
   let updateData = {};
@@ -164,5 +163,7 @@ router.post("/update/:id", uploadCloud.single("image"), (req, res, next) => {
       res.json(err);
     });
 });
+
+
 
 module.exports = router;

@@ -55,7 +55,7 @@ input {
 }
 
 .sign-up {
-  background-image: url("/images/green-blue-background.svg");
+  /*background-image: url("/images/green-blue-background.svg");*/
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;

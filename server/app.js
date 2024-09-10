@@ -16,7 +16,8 @@ require("./config/passport-config");
 
 mongoose
   .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true
+    useNewUrlParser: true,
+    useFindAndModify: false
   })
   .then(x => {
     console.log(
@@ -41,14 +42,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // Express View engine setup
-
+/*
 app.use(
   require("node-sass-middleware")({
     src: path.join(__dirname, "public"),
     dest: path.join(__dirname, "public"),
     sourceMap: true
   })
-);
+);*/
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
@@ -84,5 +85,11 @@ app.use("/api/auth", userRoutes);
 
 const projectRoutes = require("./routes/projectRoutes");
 app.use("/api/projects/", projectRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack); // Log the error
+  res.status(500).json({ message: "An internal server error occurred." });
+});
 
 module.exports = app;
